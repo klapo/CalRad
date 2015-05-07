@@ -1,0 +1,9 @@
+# Ipython Notebook #
+####################
+.ipynb_checkpoints*
+
+# data structure files #
+########################
+
+# temp folder for holding lost scripts 
+/temp/
