@@ -112,6 +112,12 @@ for files in content:
 SWdwn[ind_lat_rag,ind_lon_rag,:] = np.nan
 LWdwn[ind_lat_rag,ind_lon_rag,:] = np.nan
 
+## Sort by date
+ind = dates.argsort()
+dates = sorted(dates)
+SWdwn = SWdwn[:,:,ind]
+LWdwn = LWdwn[:,:,ind]
+
 ## Open netcdf for writing, remove and re-write if previous file version
 if os.path.isfile(fname):
     os.remove(fname)

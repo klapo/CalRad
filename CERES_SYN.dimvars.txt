@@ -1,0 +1,7 @@
+Longitude__1371
+Colatitude__1371
+Region_number__1371
+
+\1_0_deg_colatitude = 180 ;
+\1_0_deg_longitude_regions = 360 ;
+Synoptic_Hours_1_4_7_10_13_16_19_22 = 8 ;
