@@ -1,8 +1,3 @@
-# -*- coding: utf-8 -*-
-# <nbformat>3.0</nbformat>
-
-# <codecell>
-
 ## Import statements
 import gc
 
@@ -28,8 +23,6 @@ outdir = '/Users/karllapo/gdrive/SnowHydrology/proj/CloudClimatology/data/MODIS.
 
 ## OUTPUT
 fname = 'CA.MODIS.irrad.nc'
-
-# <codecell>
 
 ## Functions/classes for reading binary files in python
 ## From: http://code.activestate.com/recipes/577610-decoding-binary-files/
@@ -69,8 +62,6 @@ class BinaryReader:
     
     def __del__(self):
         self.file.close()
-
-# <codecell>
 
 ## Data directory
 os.chdir(datadir)
@@ -132,30 +123,6 @@ for files in content:
             [MODISdates.append(datetime(int(d[0]),int(d[1]),int(d[2]),int(d[3]),int(d[4]),int(d[5]))) for d in Mdates]
             
 
-# <codecell>
-
-# ###### Graphing ######
-# ## Check that I'm extracting the appropriate location
-# from matplotlib.pyplot import subplots
-# import matplotlib.pyplot as plt
-# from matplotlib import cm
-# from mpl_toolkits.basemap import Basemap, addcyclic
-
-# # must insert this statement to render the plots within the notebook
-# # this is specific to the ipython notebook
-# %matplotlib inline
-
-# fig, axs = subplots(1,1)
-# fig.set_size_inches(10,5)
-# SW_reshape = SW.reshape(nlat,nlon,ntimes,order='F')
-# # axs.imshow(SW_reshape[0:120,31:190,62], origin="lower",vmin=50,vmax=1000)
-# # axs.imshow(modis_sw[ind_lat_rect.min():ind_lat_rect.max()+1,
-#     #\ind_lon_rect.min():ind_lon_rect.max()+1,62], origin="lower",vmin=50,vmax=1000)
-# # axs.imshow(modis_sw[:,:,62], origin="lower",vmin=50,vmax=1000)
-# axs.imshow(modis_sw_out[:,:,62], origin="lower",vmin=50,vmax=1000)
-
-# <codecell>
-
 ## Study domain indices
 # NOTE: MODIS domain only goes to 35N -- the rectangle etc have been adjusted to account for this.
 # Bounding box - rectangular domain
@@ -189,16 +156,11 @@ line_east_b = LR_rag[1]-line_east_m*LR_rag[0]
 ind_lon_rag,ind_lat_rag = np.nonzero( (lon_m < (lat_m-line_west_b)/line_west_m) | \
                 (lon_m > (lat_m-line_east_b)/line_east_m) | (lat_m < LR_rag[1]) | (lat_m > UL_rag[1]))
 
-
+## NaN data outside CA domain
+# modis data w/in study region (rectangle)
 # Bizarre behavior here: python won't broadcast the modis_sw to modis_sw_out using the indices:
 #    - ind_lat_rect and ind_lon_rect
 #    - instead construct the indices as ind_lat_rect.min():ind_lat_rect.max(),ind_lon_rect.min():ind_lon_rect.max()
-
-# <codecell>
-
-## NaN data outside CA domain
-# modis data w/in study region (rectangle)
-# See above note about indexing
 modis_sw_out = modis_sw[ind_lat_rect.min():ind_lat_rect.max()+1,ind_lon_rect.min():ind_lon_rect.max()+1,:]
 # modis data w/in study region (ragged domain)
 modis_sw_out[ind_lat_rag,ind_lon_rag,:] = np.nan
@@ -250,4 +212,3 @@ for nt in range(count):
     SWdwn_nc_out[nt,:,:] = modis_sw_out[:,:,nt]
 
 ncfile.close()
-
