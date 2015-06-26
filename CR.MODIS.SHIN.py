@@ -28,6 +28,26 @@ if _platform == "linux" or _platform == "linux2":
 elif _platform == "darwin":
     dir_data = '/Users/karllapo/gdrive/SnowHydrology/proj/CloudClimatology/data/MODIS.IRRAD/'
 
+#### NaN Helper function -- for transmissivity interpolation later
+# From here: http://stackoverflow.com/questions/6518811/interpolate-nan-values-in-a-numpy-array
+import numpy as np
+
+def nan_helper(y):
+    """Helper to handle indices and logical indices of NaNs.
+
+    Input:
+        - y, 1d numpy array with possible NaNs
+    Output:
+        - nans, logical indices of NaNs
+        - index, a function, with signature indices= index(logical_indices),
+          to convert logical indices of NaNs to 'equivalent' indices
+    Example:
+        >>> # linear interpolation of NaNs
+        >>> nans, x= nan_helper(y)
+        >>> y[nans]= np.interp(x(nans), x(~nans), y[~nans])
+    """
+    return np.isnan(y), lambda z: z.nonzero()[0]
+
 ## Load data
 os.chdir(dir_data)
 print(os.getcwd())
@@ -225,16 +245,21 @@ for n in np.arange(0,3):
             # Skip areas outside the study domain
             if np.all(np.isnan(SWdwn[:,ind_lat,ind_lon])):
                 continue
-            
+
             ## Average elevation angle for each point
             el_hour[ind_discon_hour[n][0]:ind_discon_hour[n][1],ind_lat[0],ind_lon[0]] = \
-                np.squeeze(solargeo.AVG_EL(d_cont,lat_i,lon_i,8,'MID'))
+                np.squeeze(solargeo.AVG_EL(d_cont,lat_i,lon_i,0,'MID'))
                 
             ## Interpolate transmissivity
+            tau_for_interp = tau[ind_discon[n][0]:ind_discon[n][1],ind_lat[0],ind_lon[0]]
+            nandex, dind = nan_helper(tau_for_interp)
+            tau_for_interp[nandex] = np.interp(dind(nandex), dind(~nandex), tau_for_interp[~nandex])
+            tau_for_interp[tau_for_interp < 0] = 0
+            tau_for_interp[tau_for_interp > 1] = 1
+            
             tau_interp[ind_discon_hour[n][0]:ind_discon_hour[n][1],ind_lat[0],ind_lon[0]] = np.interp(\
-                        d_contpy,d_py[ind_discon[n][0]:ind_discon[n][1]],\
-                        tau[ind_discon[n][0]:ind_discon[n][1],ind_lat[0],ind_lon[0]])
-
+                        d_contpy,d_py[ind_discon[n][0]:ind_discon[n][1]],tau_for_interp)
+              
 ## Checks on interpolated tau
 flag_check_tau_interp = 0
 if flag_check_tau_interp:
@@ -275,7 +300,7 @@ tau_hour_ds.to_netcdf('CA.MODIS.transmissivity_hour.nc')
 ## Interpolated shortwave
 # Have average elevation angle for an hour -> average shortwave for an hour
 # Step may need to be revisited, order of operations changed from matlab functions
-SWdwn_hour = tau_interp*1365*el_hour
+SWdwn_hour = tau_interp*1365*np.sin(e*np.pi/180)
 # Build xray structure and save
 SWdwn_hour_ds = xray.Dataset({'SWdwn': (['time','lat','lon'], SWdwn_hour)},coords={'time': d_hour64,'lat': lat,'lon':lon})
 SWdwn_hour_ds.to_netcdf('CA.MODIS.interp_shortwave_hour.nc')
