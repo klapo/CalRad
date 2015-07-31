@@ -26,9 +26,14 @@ import os
 # dir_rawnc = '/Users/karllapo/gdrive/SnowHydrology/proj/CloudClimatology/data/WRF'
 # dir_cleannc = '/Users/karllapo/gdrive/SnowHydrology/proj/CloudClimatology/data/WRF'
 # dir_procnc = '/Users/karllapo/gdrive/SnowHydrology/proj/CloudClimatology/data/WRF'
-dir_rawnc = '/storage/WRF/newWRFRD1'
-dir_cleannc = '/home/lapok/WRF/clean'
-dir_procnc = '/home/lapok/WRF/proc'
+
+# dir_rawnc = '/storage/WRF/newWRFRD1'
+# dir_cleannc = '/home/lapok/WRF/clean'
+# dir_procnc = '/home/lapok/WRF/proc'
+
+dir_rawnc = '/home/disk/p/lapok/proj/CloudClimatology/data/WRF/clean'
+dir_cleannc = '/home/disk/p/lapok/proj/CloudClimatology/data/WRF/clean'
+dir_procnc = '/home/disk/p/lapok/proj/CloudClimatology/data/WRF/proc'
 
 ####################################################################################################
 # Script
@@ -95,53 +100,52 @@ for files in content:
         f.close()
         break
 
-#### clean nc files, reduce to only relevant variables
-# Directory contents
-os.chdir(dir_rawnc)
-content = os.listdir(os.getcwd())
-for files in content:
-    os.chdir(dir_rawnc)
-    if files[0:-10] == nc_name and files[-3:] == '.nc':
-        netcdf_file = files
-        print("Cleaning: "+netcdf_file)
+# #### clean nc files, reduce to only relevant variables
+# # Directory contents
+# os.chdir(dir_rawnc)
+# content = os.listdir(os.getcwd())
+# for files in content:
+#     os.chdir(dir_rawnc)
+#     if files[0:-10] == nc_name and files[-3:] == '.nc':
+#         netcdf_file = files
+#         print("Cleaning: "+netcdf_file)
     
-        ## Read netcdf file
-        ds_in = xray.open_dataset(netcdf_file,chunks={'Time':5})
-        # Drop irrelevant variables
-        ds_in = ds_in.drop(['ncl10','ncl11','ncl12','ncl4','ncl5','ncl6','ncl7','ncl8','ncl9',\
-                            'lu','lm','qfx','emiss','albedo','tsk','lat','lon'])
-        # Datetime
-        wrfd = ds_in.Times.values
-        wrfdates = []
-        [wrfdates.append(datetime.strptime(d,"%Y-%m-%d_%H:%M:%S")) for d in wrfd]
+#         ## Read netcdf file
+#         ds_in = xray.open_dataset(netcdf_file,chunks={'Time':5})
+#         # Drop irrelevant variables
+#         ds_in = ds_in.drop(['ncl10','ncl11','ncl12','ncl4','ncl5','ncl6','ncl7','ncl8','ncl9',\
+#                             'lu','lm','qfx','emiss','albedo','tsk','lat','lon'])
+#         # Datetime
+#         wrfd = ds_in.Times.values
+#         wrfdates = []
+#         [wrfdates.append(datetime.strptime(d,"%Y-%m-%d_%H:%M:%S")) for d in wrfd]
                 
-        ## Build output structure
-        SWdwn = ds_in.swdnb.values[:,ind_lat_s_rect.min():ind_lat_s_rect.max()+1,ind_lon_s_rect.min():ind_lon_s_rect.max()+1]
-        LWdwn = ds_in.lwdnb.values[:,ind_lat_s_rect.min():ind_lat_s_rect.max()+1,ind_lon_s_rect.min():ind_lon_s_rect.max()+1]
-        ter = ds_in.ter.values[ind_lat_s_rect.min():ind_lat_s_rect.max()+1,ind_lon_s_rect.min():ind_lon_s_rect.max()+1]
-        ds_out = xray.Dataset({'SWdwn':(['time','lat','lon'],SWdwn),\
-                                'LWdwn':(['time','lat','lon'],LWdwn),\
-                                'ter':(['lat','lon'],ter)},\
-                                coords={'time': (['time'],wrfdates),\
-                                        'lat':(['lat'],lat_out),\
-                                        'lon':(['lon'],lon_out)})
+#         ## Build output structure
+#         SWdwn = ds_in.swdnb.values[:,ind_lat_s_rect.min():ind_lat_s_rect.max()+1,ind_lon_s_rect.min():ind_lon_s_rect.max()+1]
+#         LWdwn = ds_in.lwdnb.values[:,ind_lat_s_rect.min():ind_lat_s_rect.max()+1,ind_lon_s_rect.min():ind_lon_s_rect.max()+1]
+#         ter = ds_in.ter.values[ind_lat_s_rect.min():ind_lat_s_rect.max()+1,ind_lon_s_rect.min():ind_lon_s_rect.max()+1]
+#         ds_out = xray.Dataset({'SWdwn':(['time','lat','lon'],SWdwn),\
+#                                 'LWdwn':(['time','lat','lon'],LWdwn),\
+#                                 'ter':(['lat','lon'],ter)},\
+#                                 coords={'time': (['time'],wrfdates),\
+#                                         'lat':(['lat'],lat_out),\
+#                                         'lon':(['lon'],lon_out)})
         
-        ## Write
-        os.chdir(dir_cleannc)
-        fname_out = clean_prepend+files[-10:-3]+'.nc'
-        ds_out.to_netcdf(fname_out)
+#         ## Write
+#         os.chdir(dir_cleannc)
+#         fname_out = clean_prepend+files[-10:-3]+'.nc'
+#         ds_out.to_netcdf(fname_out)
         
-        ## Finish, close files, clear out memory
-        wrfd = None
-        wrfdates = None
-        ds_in = None
-        ds_out = None
-        SWdwn = None
-        LWdwn = None
-        ter = None
-        collect = gc.collect()
+#         ## Finish, close files, clear out memory
+#         wrfd = None
+#         wrfdates = None
+#         ds_in = None
+#         ds_out = None
+#         SWdwn = None
+#         LWdwn = None
+#         ter = None
+#         collect = gc.collect()
         
-
 #### Read netcdfs 
 # Directory contents
 os.chdir(dir_cleannc)
