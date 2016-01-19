@@ -25,14 +25,13 @@ import os
 #dir_procnc = '/Users/karllapo/gdrive/SnowHydrology/proj/CloudClimatology/data/WRFEnsemble/'
 
 ## Unix box
-dir_rawnc = '/backup/storage/WRF/microandLBC/'
-dir_cleannc = '/home/lapok/WRFEnsemble/clean/'
-dir_procnc = '/home/lapok/WRFEnsemble/proc/'
+#dir_rawnc = '/backup/storage/WRF/microandLBC/'
+#dir_cleannc = '/home/lapok/WRFEnsemble/clean/'
+#dir_procnc = '/home/lapok/WRFEnsemble/proc/'
 
 ## Atmos server
-dir_rawnc = '/backup/storage/WRF/microandLBC/'
-dir_cleannc = '/home/lapok/WRFEnsemble/clean/'
-dir_procnc = '/home/lapok/WRFEnsemble/proc/'
+dir_cleannc = '/home/disk/p/lapok/proj/CalRad/data/WRFEnsemble/clean'
+dir_procnc = '/home/disk/p/lapok/proj/CalRad/data/WRFEnsemble/proc'
 
 ####################################################################################################
 # Script
@@ -67,15 +66,15 @@ UL_rag = [-123.5,41]
 #### Domain indices, coordinates, pre-allocation
 allocationFlag = False
 
-os.chdir(dir_rawnc)
+os.chdir(dir_cleannc)
 # Loop through each ensemble
 for ens in ensNames:
     # Directory contents
-    os.chdir(dir_rawnc+ens)
+    os.chdir(dir_cleannc)
     content = os.listdir(os.getcwd())
     
     for files in content:
-        if files[0:-24] == nc_name and files[-3:] == '.nc':
+        if clean_prepend in files and files[-3:] == '.nc':
             allocationFlag = True
             netcdf_file = files
             
